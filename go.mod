@@ -12,13 +12,15 @@ require (
 )
 
 require (
-	github.com/containerd/containerd v1.6.19 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/Microsoft/hcsshim v0.9.10 // indirect
+	github.com/containerd/containerd v1.6.26 // indirect
+	github.com/containerd/log v0.1.0 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/sys v0.13.0 // indirect
-	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37 // indirect
-	google.golang.org/grpc v1.51.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
+	google.golang.org/grpc v1.58.3 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )
 
 // https://github.com/cue-labs/oci/pull/29
