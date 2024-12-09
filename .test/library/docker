@@ -1,6 +1,6 @@
 # this file is generated via https://github.com/docker-library/docker/blob/b0550bbda87ae407b6fcf5b039afed7b8c256251/generate-stackbrew-library.sh
 
-Maintainers: Tianon Gravi <tianon@dockerproject.org> (@tianon),
+Maintainers: KhulnaSoft Ltd <khulnasoft@dockerproject.org> (@khulnasoft),
              Joseph Ferguson <yosifkit@gmail.com> (@yosifkit)
 GitRepo: https://github.com/docker-library/docker.git
 Builder: buildkit

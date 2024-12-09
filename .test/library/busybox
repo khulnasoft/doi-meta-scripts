@@ -1,6 +1,6 @@
 # this file is generated via https://github.com/docker-library/busybox/blob/a20bcbde28bc3ccb18d189b808d373d27caccbe4/generate-stackbrew-library.sh
 
-Maintainers: Tianon Gravi <admwiggin@gmail.com> (@tianon),
+Maintainers: KhulnaSoft Ltd <ainfo@khulnasoft.com> (@khulnasoft),
              Joseph Ferguson <yosifkit@gmail.com> (@yosifkit)
 GitRepo: https://github.com/docker-library/busybox.git
 GitCommit: a20bcbde28bc3ccb18d189b808d373d27caccbe4

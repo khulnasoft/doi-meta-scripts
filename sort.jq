@@ -2,7 +2,7 @@
 # output: something suitable for use in "sort_by" for sorting in "natural sort" order
 def sort_split_natural:
 	# https://en.wikipedia.org/wiki/Natural_sort_order
-	# similar to https://github.com/tianon/debian-bin/blob/448b5784ac63e6341d5e5762004e3d9e64331cf2/jq/dpkg-version.jq#L3 but a much smaller/simpler problem set (numbers vs non-numbers)
+	# similar to https://github.com/khulnasoft/debian-bin/blob/448b5784ac63e6341d5e5762004e3d9e64331cf2/jq/dpkg-version.jq#L3 but a much smaller/simpler problem set (numbers vs non-numbers)
 	[
 		scan("[0-9]+|[^0-9]+|^$")
 		| tonumber? // .

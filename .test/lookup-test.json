@@ -1,7 +1,7 @@
 [
   [
     [
-      "tianon/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
+      "khulnasoft/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
     ],
     {
       "schemaVersion": 2,
@@ -13,7 +13,7 @@
           "size": 946,
           "annotations": {
             "com.docker.official-images.bashbrew.arch": "windows-amd64",
-            "org.opencontainers.image.ref.name": "tianon/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
+            "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
           },
           "platform": {
             "architecture": "amd64",
@@ -23,13 +23,13 @@
         }
       ],
       "annotations": {
-        "org.opencontainers.image.ref.name": "tianon/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
+        "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
       }
     }
   ],
   [
     [
-      "tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
+      "khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
     ],
     {
       "schemaVersion": 2,
@@ -41,7 +41,7 @@
           "size": 861,
           "annotations": {
             "com.docker.official-images.bashbrew.arch": "amd64",
-            "org.opencontainers.image.ref.name": "tianon/test@sha256:e2fc4e5012d16e7fe466f5291c476431beaa1f9b90a5c2125b493ed28e2aba57",
+            "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:e2fc4e5012d16e7fe466f5291c476431beaa1f9b90a5c2125b493ed28e2aba57",
             "org.opencontainers.image.revision": "3fb6ebca4163bf5b9cc496ac3e8f11cb1e754aee",
             "org.opencontainers.image.source": "https://github.com/docker-library/hello-world.git#3fb6ebca4163bf5b9cc496ac3e8f11cb1e754aee:amd64/hello-world",
             "org.opencontainers.image.url": "https://hub.docker.com/_/hello-world",
@@ -58,7 +58,7 @@
           "size": 946,
           "annotations": {
             "com.docker.official-images.bashbrew.arch": "windows-amd64",
-            "org.opencontainers.image.ref.name": "tianon/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
+            "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23"
           },
           "platform": {
             "architecture": "amd64",
@@ -72,7 +72,7 @@
           "size": 946,
           "annotations": {
             "com.docker.official-images.bashbrew.arch": "windows-amd64",
-            "org.opencontainers.image.ref.name": "tianon/test@sha256:3a0bd0fb5ad6dd6528dc78726b3df78e980b39b379e99c5a508904ec17cfafe5"
+            "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:3a0bd0fb5ad6dd6528dc78726b3df78e980b39b379e99c5a508904ec17cfafe5"
           },
           "platform": {
             "architecture": "amd64",
@@ -82,14 +82,14 @@
         }
       ],
       "annotations": {
-        "org.opencontainers.image.ref.name": "tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
+        "org.opencontainers.image.ref.name": "khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
       }
     }
   ],
   [
     [
       "--type manifest",
-      "tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
+      "khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
     ],
     {
       "schemaVersion": 2,
@@ -132,7 +132,7 @@
   [
     [
       "--type blob",
-      "tianon/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a"
+      "khulnasoft/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a"
     ],
     "eyJhcmNoaXRlY3R1cmUiOiJhbWQ2NCIsImNvbmZpZyI6eyJFbnYiOlsiUEFUSD0vdXNyL2xvY2FsL3NiaW46L3Vzci9sb2NhbC9iaW46L3Vzci9zYmluOi91c3IvYmluOi9zYmluOi9iaW4iXSwiQ21kIjpbIi9oZWxsbyJdLCJXb3JraW5nRGlyIjoiLyIsIkFyZ3NFc2NhcGVkIjp0cnVlLCJPbkJ1aWxkIjpudWxsfSwiY3JlYXRlZCI6IjIwMjMtMDUtMDJUMTY6NDk6MjdaIiwiaGlzdG9yeSI6W3siY3JlYXRlZCI6IjIwMjMtMDUtMDJUMTY6NDk6MjdaIiwiY3JlYXRlZF9ieSI6IkNPUFkgaGVsbG8gLyAjIGJ1aWxka2l0IiwiY29tbWVudCI6ImJ1aWxka2l0LmRvY2tlcmZpbGUudjAifSx7ImNyZWF0ZWQiOiIyMDIzLTA1LTAyVDE2OjQ5OjI3WiIsImNyZWF0ZWRfYnkiOiJDTUQgW1wiL2hlbGxvXCJdIiwiY29tbWVudCI6ImJ1aWxka2l0LmRvY2tlcmZpbGUudjAiLCJlbXB0eV9sYXllciI6dHJ1ZX1dLCJvcyI6ImxpbnV4Iiwicm9vdGZzIjp7InR5cGUiOiJsYXllcnMiLCJkaWZmX2lkcyI6WyJzaGEyNTY6YWMyODgwMGVjOGJiMzhkNWMzNWI0OWQ0NWE2YWM0Nzc3NTQ0OTQxMTk5MDc1ZGZmOGM0ZWI2M2UwOTNhYTgxZSJdfX0="
   ],
@@ -140,7 +140,7 @@
     [
       "--head",
       "--type manifest",
-      "tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
+      "khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac"
     ],
     {
       "mediaType": "application/vnd.oci.image.index.v1+json",
@@ -153,7 +153,7 @@
     [
       "--head",
       "--type blob",
-      "tianon/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a"
+      "khulnasoft/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a"
     ],
     {
       "mediaType": "application/octet-stream",
@@ -166,7 +166,7 @@
     [
       "--head",
       "--type blob",
-      "tianon/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e"
+      "khulnasoft/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e"
     ],
     {
       "mediaType": "application/octet-stream",
@@ -178,7 +178,7 @@
     [
       "--head",
       "--type manifest",
-      "tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
+      "khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
     ],
     {
       "mediaType": "application/vnd.oci.image.manifest.v1+json",
@@ -189,14 +189,14 @@
   [
     [
       "--type blob",
-      "tianon/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e"
+      "khulnasoft/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e"
     ],
     "ewoJImFyY2hpdGVjdHVyZSI6ICJhbWQ2NCIsCgkiY29uZmlnIjogewoJCSJDbWQiOiBbCgkJCSIvdHJ1ZSIKCQldCgl9LAoJImNyZWF0ZWQiOiAiMjAyMy0wMi0wMVQwNjo1MToxMVoiLAoJImhpc3RvcnkiOiBbCgkJewoJCQkiY3JlYXRlZCI6ICIyMDIzLTAyLTAxVDA2OjUxOjExWiIsCgkJCSJjcmVhdGVkX2J5IjogImh0dHBzOi8vZ2l0aHViLmNvbS90aWFub24vZG9ja2VyZmlsZXMvdHJlZS9tYXN0ZXIvdHJ1ZSIKCQl9CgldLAoJIm9zIjogImxpbnV4IiwKCSJyb290ZnMiOiB7CgkJImRpZmZfaWRzIjogWwoJCQkic2hhMjU2OjY1YjVhNDU5M2NjNjFkM2VhNmQzNTVmYjk3YzA0MzBkODIwZWUyMWFhODUzNWY1ZGU0NWU3NWMzMTk1NGI3NDMiCgkJXSwKCQkidHlwZSI6ICJsYXllcnMiCgl9Cn0K"
   ],
   [
     [
       "--type manifest",
-      "tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
+      "khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
     ],
     {
       "config": {
@@ -219,7 +219,7 @@
   ],
   [
     [
-      "tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
+      "khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
     ],
     {
       "schemaVersion": 2,
@@ -231,7 +231,7 @@
           "size": 1165,
           "annotations": {
             "com.docker.official-images.bashbrew.arch": "amd64",
-            "org.opencontainers.image.ref.name": "tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
+            "org.opencontainers.image.ref.name": "khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
           },
           "platform": {
             "architecture": "amd64",
@@ -240,7 +240,7 @@
         }
       ],
       "annotations": {
-        "org.opencontainers.image.ref.name": "tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
+        "org.opencontainers.image.ref.name": "khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d"
       }
     }
   ],
@@ -354,20 +354,20 @@
   ],
   [
     [
-      "tianon/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
+      "khulnasoft/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
     ],
     null
   ],
   [
     [
       "--head",
-      "tianon/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
+      "khulnasoft/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
     ],
     null
   ],
   [
     [
-      "tianon/test@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      "khulnasoft/test@sha256:0000000000000000000000000000000000000000000000000000000000000000"
     ],
     null
   ]

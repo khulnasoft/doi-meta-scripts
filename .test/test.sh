@@ -33,11 +33,11 @@ time bashbrew fetch "$@"
 
 time "$dir/../sources.sh" "$@" > "$dir/sources-doi.json"
 
-# also fetch/include Tianon's more cursed "infosiftr/moby" example (a valid manifest with arch-specific non-archTags that end up mapping to the same sourceId)
+# also fetch/include Khulnasoft's more cursed "infosiftr/moby" example (a valid manifest with arch-specific non-archTags that end up mapping to the same sourceId)
 bashbrew fetch infosiftr-moby
 ( BASHBREW_ARCH_NAMESPACES= "$dir/../sources.sh" infosiftr-moby > "$dir/sources-moby.json" )
-# technically, this *also* needs BASHBREW_STAGING_TEMPLATE='tianon/zz-staging:ARCH-BUILD', but that's a "builds.sh" flag and separating that would complicate including this even more, so Tianon has run the following one-liner to "inject" those builds as if they lived in 'oisupport/staging-ARCH:BUILD' instead:
-#   jq -r '[ .[] | select(any(.source.arches[].tags[]; startswith("infosiftr-moby:"))) | "tianon/zz-staging:\(.build.arch)-\(.buildId)" as $tianon | @sh "../bin/lookup \($tianon) | jq --arg img \(.build.img) \("{ indexes: { ($img): . } }")" ] | "{ " + join(" && ") + @sh " && cat cache-builds.json; } | jq -s --tab \("reduce .[] as $i ({ indexes: { } }; .indexes += $i.indexes)") > cache-builds.json.new && mv cache-builds.json.new cache-builds.json"' builds.json | bash -Eeuo pipefail -x
+# technically, this *also* needs BASHBREW_STAGING_TEMPLATE='khulnasoft/zz-staging:ARCH-BUILD', but that's a "builds.sh" flag and separating that would complicate including this even more, so Khulnasoft has run the following one-liner to "inject" those builds as if they lived in 'oisupport/staging-ARCH:BUILD' instead:
+#   jq -r '[ .[] | select(any(.source.arches[].tags[]; startswith("infosiftr-moby:"))) | "khulnasoft/zz-staging:\(.build.arch)-\(.buildId)" as $khulnasoft | @sh "../bin/lookup \($khulnasoft) | jq --arg img \(.build.img) \("{ indexes: { ($img): . } }")" ] | "{ " + join(" && ") + @sh " && cat cache-builds.json; } | jq -s --tab \("reduce .[] as $i ({ indexes: { } }; .indexes += $i.indexes)") > cache-builds.json.new && mv cache-builds.json.new cache-builds.json"' builds.json | bash -Eeuo pipefail -x
 # (and then re-run the tests to canonicalize the file ordering)
 jq -s 'add' "$dir/sources-doi.json" "$dir/sources-moby.json" > "$dir/sources.json"
 rm -f "$dir/sources-doi.json" "$dir/sources-moby.json"
@@ -75,25 +75,25 @@ time "$coverage/builds.sh" --cache="$dir/cache-builds.json" "$dir/sources.json" 
 "$dir/../.go-env.sh" go build -coverpkg=./... -trimpath -o "$coverage/bin/lookup" ./cmd/lookup
 lookup=(
 	# force a config blob lookup for platform object creation (and top-level Docker media type!)
-	'tianon/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23'
-	# (this is the first Windows manifest of "tianon/test:index-no-platform-smaller" referenced below)
+	'khulnasoft/test@sha256:2f19ce27632e6baf4ebb1b582960d68948e52902c8cfac10133da0058f1dab23'
+	# (this is the first Windows manifest of "khulnasoft/test:index-no-platform-smaller" referenced below)
 
-	# tianon/test:index-no-platform-smaller - a "broken" index with *zero* platform objects in it (so every manifest requires a platform lookup)
-	'tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac'
+	# khulnasoft/test:index-no-platform-smaller - a "broken" index with *zero* platform objects in it (so every manifest requires a platform lookup)
+	'khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac'
 	# (doing these in the same run means the manifest from above should be cached and exercise more codepaths for better coverage)
 
-	--type manifest 'tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac' # same manifest again, but without SynthesizeIndex
-	--type blob 'tianon/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a' # first config blob from the above
+	--type manifest 'khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac' # same manifest again, but without SynthesizeIndex
+	--type blob 'khulnasoft/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a' # first config blob from the above
 	# and again, but this time HEADs
-	--head --type manifest 'tianon/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac'
-	--head --type blob 'tianon/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a'
+	--head --type manifest 'khulnasoft/test@sha256:347290ddd775c1b85a3e381b09edde95242478eb65153e9b17225356f4c072ac'
+	--head --type blob 'khulnasoft/test@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a'
 
-	# again with things that aren't cached yet (tianon/true:oci, specifically)
-	--head --type blob 'tianon/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e' # config blob
-	--head --type manifest 'tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
-	--type blob 'tianon/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e' # config blob
-	--type manifest 'tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
-	'tianon/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
+	# again with things that aren't cached yet (khulnasoft/true:oci, specifically)
+	--head --type blob 'khulnasoft/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e' # config blob
+	--head --type manifest 'khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
+	--type blob 'khulnasoft/true@sha256:25be82253336f0b8c4347bc4ecbbcdc85d0e0f118ccf8dc2e119c0a47a0a486e' # config blob
+	--type manifest 'khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
+	'khulnasoft/true:oci@sha256:9ef42f1d602fb423fad935aac1caa0cfdbce1ad7edce64d080a4eb7b13f7cd9d'
 
 	# tag lookup! (but with a hopefully stable example tag -- a build of notary:server)
 	--head 'oisupport/staging-amd64:71756dd75e41c4bc5144b64d36b4834a5a960c495470915eb69f96e9f2cb6694'
@@ -102,15 +102,15 @@ lookup=(
 	'oisupport/staging-amd64:71756dd75e41c4bc5144b64d36b4834a5a960c495470915eb69f96e9f2cb6694'
 
 	# exercise 404 codepaths
-	"tianon/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
-	--head "tianon/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
-	'tianon/test@sha256:0000000000000000000000000000000000000000000000000000000000000000'
+	"khulnasoft/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
+	--head "khulnasoft/this-is-a-repository-that-will-never-ever-exist-$RANDOM-$RANDOM:$RANDOM-$RANDOM"
+	'khulnasoft/test@sha256:0000000000000000000000000000000000000000000000000000000000000000'
 )
 "$coverage/bin/lookup" "${lookup[@]}" | jq -s '
 	[
 		reduce (
 			$ARGS.positional[]
-			| if startswith("tianon/this-is-a-repository-that-will-never-ever-exist-") then
+			| if startswith("khulnasoft/this-is-a-repository-that-will-never-ever-exist-") then
 				gsub("[0-9]+"; "$RANDOM")
 			else . end
 		) as $a ([];
@@ -137,7 +137,7 @@ if [ -n "$doDeploy" ]; then
 	docker run --detach --name meta-scripts-test-registry --publish 5000 registry:2
 	registryPort="$(DOCKER_API_VERSION=1.41 docker container inspect --format '{{ index .NetworkSettings.Ports "5000/tcp" 0 "HostPort" }}' meta-scripts-test-registry)"
 
-	# apparently Tianon's local system is too good and the registry spins up fast enough, but this needs a small "wait for the registry to be ready" loop for systems like GHA (adding "--cpus 0.01" to the above "docker run" seems to replicate the race reasonably well)
+	# apparently Khulnasoft's local system is too good and the registry spins up fast enough, but this needs a small "wait for the registry to be ready" loop for systems like GHA (adding "--cpus 0.01" to the above "docker run" seems to replicate the race reasonably well)
 	tries=10
 	while [ "$(( tries-- ))" -gt 0 ]; do
 		if docker logs meta-scripts-test-registry |& grep -F ' listening on '; then
@@ -190,24 +190,24 @@ if [ -n "$doDeploy" ]; then
 			lookup: { "": "oisupport/staging-amd64:34bb44c7d8b6fb7a337fcee0afa7c3a84148e35db6ab83041714c3e6d4c6238b" },
 		},
 		# and again, but with a manifest bigger than "BlobSizeWorthHEAD"
-		# https://oci.dag.dev/?image=tianon/test:screaming-index (big image index, sha256:4077658bc7e39f02f81d1682fe49f66b3db2c420813e43f5db0c53046167c12f)
+		# https://oci.dag.dev/?image=khulnasoft/test:screaming-index (big image index, sha256:4077658bc7e39f02f81d1682fe49f66b3db2c420813e43f5db0c53046167c12f)
 		{
 			type: "manifest",
 			refs: [$reg+"/test@sha256:4077658bc7e39f02f81d1682fe49f66b3db2c420813e43f5db0c53046167c12f"],
-			lookup: { "sha256:4077658bc7e39f02f81d1682fe49f66b3db2c420813e43f5db0c53046167c12f": "tianon/test" },
+			lookup: { "sha256:4077658bc7e39f02f81d1682fe49f66b3db2c420813e43f5db0c53046167c12f": "khulnasoft/test" },
 		},
-		# https://oci.dag.dev/?image=tianon/test:screaming (big image manifest, sha256:96a7a809d1b336011450164564154a5e1c257dc7eb9081e28638537c472ccb90)
+		# https://oci.dag.dev/?image=khulnasoft/test:screaming (big image manifest, sha256:96a7a809d1b336011450164564154a5e1c257dc7eb9081e28638537c472ccb90)
 		{
 			type: "manifest",
 			refs: [$reg+"/test@sha256:96a7a809d1b336011450164564154a5e1c257dc7eb9081e28638537c472ccb90"],
-			lookup: { "sha256:96a7a809d1b336011450164564154a5e1c257dc7eb9081e28638537c472ccb90": "tianon/test" },
+			lookup: { "sha256:96a7a809d1b336011450164564154a5e1c257dc7eb9081e28638537c472ccb90": "khulnasoft/test" },
 		},
 		# again, but this time EVEN BIGGER, just to make sure we test right up to the limit of Docker Hub
-		# https://oci.dag.dev/?image=tianon/test:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+		# https://oci.dag.dev/?image=khulnasoft/test:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 		{
 			type: "manifest",
 			refs: [$reg+"/test:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"],
-			lookup: { "": "tianon/test:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@sha256:73614cc99c500aa4fa061368ed349df24a81844e3c2e6d0c31f290a7c8d73c22" },
+			lookup: { "": "khulnasoft/test:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@sha256:73614cc99c500aa4fa061368ed349df24a81844e3c2e6d0c31f290a7c8d73c22" },
 		},
 
 		empty

@@ -138,7 +138,7 @@ func EnsureManifest(ctx context.Context, ref Reference, manifest json.RawMessage
 			childBlobs = append(childBlobs, manifestChildren.Layers...)
 			for _, child := range childBlobs {
 				childRef, childTargetRef := childToRefs(child)
-				// TODO if blob sets URLs, don't bother (foreign layer) -- maybe check for those MediaTypes explicitly? (not a high priority as they're no longer used and officially discouraged/deprecated; would only matter if Tianon wants to use this for "hell/win" too 👀)
+				// TODO if blob sets URLs, don't bother (foreign layer) -- maybe check for those MediaTypes explicitly? (not a high priority as they're no longer used and officially discouraged/deprecated; would only matter if Khulnasoft wants to use this for "hell/win" too 👀)
 				if _, err := CopyBlob(ctx, childRef, childTargetRef); err != nil {
 					return desc, fmt.Errorf("%s: CopyBlob(%s) failed: %w", childTargetRef, childRef, err)
 				}

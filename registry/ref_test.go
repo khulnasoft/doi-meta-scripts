@@ -35,8 +35,8 @@ func TestParseRef(t *testing.T) {
 		out string
 	}{
 		{"hello-world:latest", "docker.io/library/hello-world:latest"},
-		{"tianon/true:oci", "docker.io/tianon/true:oci"},
-		{"docker.io/tianon/true:oci", "docker.io/tianon/true:oci"},
+		{"khulnasoft/true:oci", "docker.io/khulnasoft/true:oci"},
+		{"docker.io/khulnasoft/true:oci", "docker.io/khulnasoft/true:oci"},
 		{"localhost:5000/foo", "localhost:5000/foo"},
 
 		// Docker Hub edge cases

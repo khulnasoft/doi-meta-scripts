@@ -4,18 +4,18 @@ properties([
 	disableResume(),
 	durabilityHint('PERFORMANCE_OPTIMIZED'),
 	pipelineTriggers([
-		upstream(threshold: 'UNSTABLE', upstreamProjects: '../meta'),
+		upstream(threshold: 'UNSTABLE', upstreamProjects: 'meta'),
 	]),
 ])
 
-env.BASHBREW_ARCH = env.JOB_NAME.minus('/trigger').split('/')[-1] // "windows-amd64", "arm64v8", etc
+env.BASHBREW_ARCH = env.JOB_NAME.split('/')[-1].minus('trigger-') // "windows-amd64", "arm64v8", etc
 
 def queue = []
 def breakEarly = false // thanks Jenkins...
 
-// string filled with all images needing build and whether they were skipped this time for recording after queue completion
-// { buildId: { "count": 1, skip: 0, ... }, ... }
-def currentJobsJson = ''
+// this includes the number of attempts per failing buildId
+// { buildId: { "count": 1, ... }, ... }
+def pastFailedJobsJson = '{}'
 
 node {
 	stage('Checkout') {
@@ -26,11 +26,6 @@ node {
 			]],
 			branches: [[name: '*/main']],
 			extensions: [
-				cloneOption(
-					noTags: true,
-					shallow: true,
-					depth: 1,
-				),
 				submodule(
 					parentCredentials: true,
 					recursiveSubmodules: true,
@@ -41,167 +36,155 @@ node {
 				[$class: 'RelativeTargetDirectory', relativeTargetDir: 'meta'],
 			],
 		))
+		pastFailedJobsJson = sh(returnStdout: true, script: '''#!/usr/bin/env bash
+			set -Eeuo pipefail -x
+
+			if ! json="$(wget --timeout=5 -qO- "$JOB_URL/lastSuccessfulBuild/artifact/pastFailedJobs.json")"; then
+				echo >&2 'failed to get pastFailedJobs.json'
+				json='{}'
+			fi
+			jq <<<"$json" '.'
+		''').trim()
 	}
 
 	dir('meta') {
+		def queueJson = ''
 		stage('Queue') {
-			// using pastJobsJson, sort the needs_build queue so that previously attempted builds always live at the bottom of the queue
-			// list of builds that have been failing and will be skipped this trigger
-			def queueAndFailsJson = sh(returnStdout: true, script: '''
-				if \\
-					! wget --timeout=5 -qO past-jobs.json "$JOB_URL/lastSuccessfulBuild/artifact/past-jobs.json" \\
-					|| ! jq 'empty' past-jobs.json \\
-				; then
-					# temporary migration of old data
-					if ! wget --timeout=5 -qO past-jobs.json "$JOB_URL/lastSuccessfulBuild/artifact/pastFailedJobs.json" || ! jq 'empty' past-jobs.json; then
-						echo '{}' > past-jobs.json
-					fi
-				fi
-				jq -c -L.scripts --slurpfile pastJobs past-jobs.json '
-					include "jenkins";
-					get_arch_queue as $rawQueue
-					| $rawQueue | jobs_record($pastJobs[0]) as $newJobs
-					| $rawQueue | filter_skips_queue($newJobs) as $filteredQueue
-					| (
-						($rawQueue | length) - ($filteredQueue | length)
-					) as $skippedCount
-					# queue, skips/builds record, number of skipped items
-					| $filteredQueue, $newJobs, $skippedCount
-				' builds.json
-			''').tokenize('\r\n')
-
-			def queueJson = queueAndFailsJson[0]
-			currentJobsJson = queueAndFailsJson[1]
-			def skips = queueAndFailsJson[2].toInteger()
-			//echo(queueJson)
-
-			def jobName = ''
-			if (queueJson && queueJson != '[]') {
-				queue = readJSON(text: queueJson)
-				jobName += 'queue: ' + queue.size()
-			} else {
-				jobName += 'queue: 0'
-				breakEarly = true
-			}
-			if (skips > 0) {
-				jobName += ' skip: ' + skips
-				if (breakEarly) {
-					// if we're skipping some builds but the effective queue is empty, we want to set the job as "unstable" instead of successful (so we know there's still *something* that needs to build but it isn't being built right now)
-					currentBuild.result = 'UNSTABLE'
-				}
-				// queue to build might be empty, be we still need to record these skipped builds
-				breakEarly = false
-			}
-			currentBuild.displayName = jobName + ' (#' + currentBuild.number + ')'
-		}
-	}
-}
-
-// with an empty queue and nothing to skip we can end early
-if (breakEarly) { return } // thanks Jenkins...
-
-// new data to be added to the past-jobs.json
-// { lastTime: unixTimestamp, url: "" }
-buildCompletionData = [:]
-
-// list of closures that we can use to wait for the jobs on.
-def waitQueue = [:]
-def waitQueueClosure(identifier, buildId, externalizableId) {
-	return {
-		stage(identifier) {
-			// "catchError" to set "stageResult" :(
-			catchError(message: 'Build of "' + identifier + '" failed', buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-				def res = waitForBuild(
-					runId: externalizableId,
-					propagateAbort: true, // allow cancelling this job to cancel all the triggered jobs
-				)
-				buildCompletionData[buildId] = [
-					lastTime: (res.startTimeInMillis + res.duration) / 1000, // convert to seconds
-					url: res.absoluteUrl,
-				]
-				if (res.result != 'SUCCESS') {
-					// set stage result via catchError
-					error(res.result)
-				}
-			}
-		}
-	}
-}
-
-// stage to wrap up all the build job triggers that get waited on later
-stage('trigger') {
-	for (buildObj in queue) {
-		if (buildObj.gha_payload) {
-			stage(buildObj.identifier) {
-				// "catchError" to set "stageResult" :(
-				catchError(message: 'Build of "' + buildObj.identifier + '" failed', buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-					node {
-						withEnv([
-							'payload=' + buildObj.gha_payload,
-						]) {
-							withCredentials([
-								string(
-									variable: 'GH_TOKEN',
-									credentialsId: 'github-access-token-docker-library-bot-meta',
-								),
-							]) {
-								sh '''
-									set -u +x
-
-									# https://docs.github.com/en/free-pro-team@latest/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event
-									curl -fL \
-										-X POST \
-										-H 'Accept: application/vnd.github+json' \
-										-H "Authorization: Bearer $GH_TOKEN" \
-										-H 'X-GitHub-Api-Version: 2022-11-28' \
-										https://api.github.com/repos/docker-library/meta/actions/workflows/build.yml/dispatches \
-										-d "$payload"
-								'''
-							}
-						}
-						// record that GHA was triggered (for tracking continued triggers that fail to push an image)
-						buildCompletionData[buildObj.buildId] = [
-							lastTime: System.currentTimeMillis() / 1000, // convert to seconds
-							url: currentBuild.absoluteUrl,
+			withEnv([
+				'pastFailedJobsJson=' + pastFailedJobsJson,
+			]) {
+				// using pastFailedJobsJson, sort the needs_build queue so that failing builds always live at the bottom of the queue
+				queueJson = sh(returnStdout: true, script: '''
+					jq -L.scripts '
+						include "meta";
+						(env.pastFailedJobsJson | fromjson) as $pastFailedJobs
+						| [
+							.[]
+							| select(
+								needs_build
+								and (
+									.build.arch as $arch
+									| if env.BASHBREW_ARCH == "gha" then
+										[ "amd64", "i386", "windows-amd64" ]
+									else [ env.BASHBREW_ARCH ] end
+									| index($arch)
+								)
+							)
 						]
+						# this Jenkins job exports a JSON file that includes the number of attempts so far per failing buildId so that this can sort by attempts which means failing builds always live at the bottom of the queue (sorted by the number of times they have failed, so the most failing is always last)
+						| sort_by($pastFailedJobs[.buildId].count // 0)
+					' builds.json
+				''').trim()
+			}
+		}
+		if (queueJson && queueJson != '[]') {
+			queue = readJSON(text: queueJson)
+			currentBuild.displayName = 'queue size: ' + queue.size() + ' (#' + currentBuild.number + ')'
+		} else {
+			currentBuild.displayName = 'empty queue (#' + currentBuild.number + ')'
+			breakEarly = true
+			return
+		}
+
+		// for GHA builds, we still need a node (to curl GHA API), so we'll handle those here
+		if (env.BASHBREW_ARCH == 'gha') {
+			withCredentials([
+				string(
+					variable: 'GH_TOKEN',
+					credentialsId: 'github-access-token-docker-library-bot-meta',
+				),
+			]) {
+				for (buildObj in queue) {
+					def identifier = buildObj.source.arches[buildObj.build.arch].tags[0] + ' (' + buildObj.build.arch + ')'
+					def json = writeJSON(json: buildObj, returnText: true)
+					withEnv([
+						'json=' + json,
+					]) {
+						stage(identifier) {
+							echo(json) // for debugging/data purposes
+
+							sh '''#!/usr/bin/env bash
+								set -Eeuo pipefail -x
+
+								# https://docs.github.com/en/free-pro-team@latest/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event
+								payload="$(
+									jq <<<"$json" -L.scripts '
+										include "jenkins";
+										gha_payload
+									'
+								)"
+
+								set +x
+								curl -fL \
+									-X POST \
+									-H 'Accept: application/vnd.github+json' \
+									-H "Authorization: Bearer $GH_TOKEN" \
+									-H 'X-GitHub-Api-Version: 2022-11-28' \
+									https://api.github.com/repos/docker-library/meta/actions/workflows/build.yml/dispatches \
+									-d "$payload"
+							'''
+						}
 					}
 				}
 			}
-		} else {
-			// "catchError" to set "stageResult" :(
-			catchError(message: 'Build of "' + buildObj.identifier + '" failed', buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+			// we're done triggering GHA, so we're completely done with this job
+			breakEarly = true
+			return
+		}
+	}
+}
 
-				// why not parallel these build() invocations?
-				// jenkins parallel closures get started in a randomish order, ruining our sorted queue
-				def res = build(
-					job: 'build',
-					parameters: [
-						string(name: 'buildId', value: buildObj.buildId),
-						string(name: 'identifier', value: buildObj.identifier),
-					],
-					propagate: false,
-					// trigger these quickly so they all get added to Jenkins queue in "queue" order (also using "waitForStart" means we have to wait for the entire "quietPeriod" before we get to move on and schedule more)
-					quietPeriod: 0, // seconds
-					// we'll wait on the builds in parallel after they are all queued (so our sorted order is the queue order)
-					waitForStart: true,
-				)
-				waitQueue[buildObj.identifier] = waitQueueClosure(buildObj.identifier, buildObj.buildId, res.externalizableId)
+if (breakEarly) { return } // thanks Jenkins...
+
+// now that we have our parsed queue, we can release the node we're holding up (since we handle GHA builds above)
+def pastFailedJobs = readJSON(text: pastFailedJobsJson)
+def newFailedJobs = [:]
+
+for (buildObj in queue) {
+	def identifier = buildObj.source.arches[buildObj.build.arch].tags[0]
+	def json = writeJSON(json: buildObj, returnText: true)
+	withEnv([
+		'json=' + json,
+	]) {
+		stage(identifier) {
+			echo(json) // for debugging/data purposes
+
+			def res = build(
+				job: 'build-' + env.BASHBREW_ARCH,
+				parameters: [
+					string(name: 'buildId', value: buildObj.buildId),
+				],
+				propagate: false,
+				quietPeriod: 5, // seconds
+			)
+			// TODO do something useful with "res.result" (especially "res.result != 'SUCCESS'")
+			echo(res.result)
+			if (res.result != 'SUCCESS') {
+				def c = 1
+				if (pastFailedJobs[buildObj.buildId]) {
+					// TODO more defensive access of .count? (it is created just below, so it should be safe)
+					c += pastFailedJobs[buildObj.buildId].count
+				}
+				// TODO maybe implement some amount of backoff? keep first url/endTime?
+				newFailedJobs[buildObj.buildId] = [
+					count: c,
+					identifier: identifier,
+					url: res.absoluteUrl,
+					endTime: (res.startTimeInMillis + res.duration) / 1000.0, // convert to seconds
+				]
+
+				// "catchError" is the only way to set "stageResult" :(
+				catchError(message: 'Build of "' + identifier + '" failed', buildResult: 'UNSTABLE', stageResult: 'FAILURE') { error() }
 			}
 		}
 	}
 }
 
-// wait on all the 'build' jobs that were queued
-if (waitQueue.size() > 0) {
-	parallel waitQueue
-}
-
-// save currentJobs so we can use it next run as pastJobs
+// save newFailedJobs so we can use it next run as pastFailedJobs
 node {
-	def buildCompletionDataJson = writeJSON(json: buildCompletionData, returnText: true)
+	def newFailedJobsJson = writeJSON(json: newFailedJobs, returnText: true)
 	withEnv([
-		'buildCompletionDataJson=' + buildCompletionDataJson,
-		'currentJobsJson=' + currentJobsJson,
+		'newFailedJobsJson=' + newFailedJobsJson,
 	]) {
 		stage('Archive') {
 			dir('builds') {
@@ -209,10 +192,7 @@ node {
 				sh '''#!/usr/bin/env bash
 					set -Eeuo pipefail -x
 
-					jq <<<"$currentJobsJson" '
-						# merge the two objects recursively, preferring data from "buildCompletionDataJson"
-						. * ( env.buildCompletionDataJson | fromjson )
-					' | tee past-jobs.json
+					jq <<<"$newFailedJobsJson" '.' | tee pastFailedJobs.json
 				'''
 				archiveArtifacts(
 					artifacts: '*.json',

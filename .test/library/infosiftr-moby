@@ -1,5 +1,5 @@
-Maintainers: Tianon Gravi <tianon@tianon.xyz> (@tianon)
-GitRepo: https://github.com/tianon/dockerfiles.git
+Maintainers: KhulnaSoft Ltd <khulnasoft@khulnasoft.com> (@khulnasoft)
+GitRepo: https://github.com/khulnasoft/dockerfiles.git
 Architectures: amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, s390x, riscv64
 
 Tags: 20.10.27, 20.10, 20, latest
